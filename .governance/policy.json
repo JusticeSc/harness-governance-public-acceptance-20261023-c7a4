@@ -1,0 +1,9 @@
+{
+  "schema": "dsh-governance-policy/v1",
+  "project": { "name": "isolated-governance-acceptance", "root": "." },
+  "skill": { "name": "harness-project-governance", "version": "1.0.0" },
+  "toolchains": ["Node.js >=22.19"],
+  "owners": { "bin/": "fixture-maintainer", ".governance/": "fixture-maintainer" },
+  "checks": { "governance-admission": "node bin/governance.mjs status ." },
+  "activation": { "record-completeness": { "active": true, "reason": "this fixture has a real registered work requirement" } }
+}

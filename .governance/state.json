@@ -1,0 +1,7 @@
+{
+  "schema": "dsh-governance-state/v1",
+  "phase": "verification",
+  "requirement": ".governance/requirements.md",
+  "acceptance": ["record completeness rejects missing facts", "required provider check blocks noncompliant commits", "recovery succeeds with protection retained"],
+  "nextAction": "observe real Actions admission check, then protect the experiment branch and exercise rejection/recovery"
+}
