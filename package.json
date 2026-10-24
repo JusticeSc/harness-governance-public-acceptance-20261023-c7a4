@@ -1,0 +1,8 @@
+{
+  "name": "governance-trusted-approval-acceptance",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "node src/project-name.js Governance Acceptance"
+  }
+}
