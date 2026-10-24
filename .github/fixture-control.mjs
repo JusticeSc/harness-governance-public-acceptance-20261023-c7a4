@@ -95,16 +95,21 @@ if (phase.startsWith('open-')) {
   const branch = pull.head.ref
   const trusted = await readFile('.github/review-ownership/approval-policy.json', 'main')
   if (JSON.parse(trusted.text).requiredPoints !== 2) throw new Error('Trusted policy changed')
+  // The authenticated owner prepares workflow changes first; this bot only
+  // writes source/policy, and its final reviewable push remains independently reviewable.
+  const githubFiles = await api('GET', `contents/.github?ref=${encodeURIComponent(branch)}`)
+  const workflows = await api('GET', `contents/.github/workflows?ref=${encodeURIComponent(branch)}`)
+  if (githubFiles.some(entry => entry.name === 'fixture-control.mjs') ||
+      workflows.some(entry => entry.name === 'fixture-controls.yml')) {
+    throw new Error('Owner must remove temporary controls on this PR branch before the final bot source change')
+  }
+  const businessCheck = await readFile('.github/workflows/fixture-business.yml', branch)
+  if (!businessCheck.text.includes("'Invalid project name'")) {
+    throw new Error('Owner must prepare the matching business check first')
+  }
   await changeFile('.github/review-ownership/approval-policy.json', branch, () => trusted.text, 'Restore the trusted approval policy without weakening')
   await changeFile('src/project-name.js', branch,
     text => replaceExactly(text, 'Project name is required', 'Invalid project name'),
     'Report invalid labels consistently for the recovered business path')
-  await changeFile('.github/workflows/fixture-business.yml', branch,
-    text => replaceExactly(text, 'Project name is required', 'Invalid project name'),
-    'Update the actual CLI failure contract in its check')
-  for (const path of ['.github/fixture-control.mjs', '.github/workflows/fixture-controls.yml']) {
-    const old = await readFile(path, branch)
-    await api('DELETE', `contents/${path}`, { branch, sha: old.sha, message: 'Remove the temporary privileged acceptance control' })
-  }
-  console.log(JSON.stringify({ operation: phase, pull: pull.number, branch, removedTemporaryControls: true }))
+  console.log(JSON.stringify({ operation: phase, pull: pull.number, branch, verifiedTemporaryControlsRemoved: true }))
 }
